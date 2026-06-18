@@ -91,21 +91,42 @@ const cartProducts = products.map(productForJson);
 
           <fieldset class="space-y-4">
             <legend class="mb-2 text-xs uppercase tracking-[0.25em] text-faded">Payment</legend>
-            <p class="-mt-2 text-xs text-faded">
-              A 30% deposit secures your place in the queue. The balance is taken at dispatch.
-            </p>
             <label class="block">
               <span class="text-[11px] uppercase tracking-widest text-faded">Card number</span>
-              <input required inputmode="numeric" placeholder="4242 4242 4242 4242" class="mt-1 w-full border-b border-line bg-transparent py-2 text-sm transition-colors focus:border-ink focus:outline-none" />
+              <input
+                required
+                inputmode="numeric"
+                autocomplete="cc-number"
+                placeholder="4242 4242 4242 4242"
+                maxlength="19"
+                data-card-number
+                class="mt-1 w-full border-b border-line bg-transparent py-2 text-sm transition-colors focus:border-ink focus:outline-none"
+              />
             </label>
             <div class="grid grid-cols-2 gap-4">
               <label class="block">
                 <span class="text-[11px] uppercase tracking-widest text-faded">Expiry</span>
-                <input required placeholder="08 / 28" class="mt-1 w-full border-b border-line bg-transparent py-2 text-sm transition-colors focus:border-ink focus:outline-none" />
+                <input
+                  required
+                  inputmode="numeric"
+                  autocomplete="cc-exp"
+                  placeholder="08 / 28"
+                  maxlength="7"
+                  data-card-expiry
+                  class="mt-1 w-full border-b border-line bg-transparent py-2 text-sm transition-colors focus:border-ink focus:outline-none"
+                />
               </label>
               <label class="block">
                 <span class="text-[11px] uppercase tracking-widest text-faded">CVC</span>
-                <input required inputmode="numeric" placeholder="123" class="mt-1 w-full border-b border-line bg-transparent py-2 text-sm transition-colors focus:border-ink focus:outline-none" />
+                <input
+                  required
+                  inputmode="numeric"
+                  autocomplete="cc-csc"
+                  placeholder="123"
+                  maxlength="4"
+                  data-card-cvc
+                  class="mt-1 w-full border-b border-line bg-transparent py-2 text-sm transition-colors focus:border-ink focus:outline-none"
+                />
               </label>
             </div>
           </fieldset>
@@ -228,7 +249,24 @@ const cartProducts = products.map(productForJson);
     const totalNode = document.querySelector("[data-cart-total]");
     const stepCart = document.querySelector('[data-cart-step="cart"]');
     const stepDetails = document.querySelector('[data-cart-step="details"]');
+    const cardNumber = document.querySelector("[data-card-number]");
+    const cardExpiry = document.querySelector("[data-card-expiry]");
+    const cardCvc = document.querySelector("[data-card-cvc]");
     let step = "cart";
+
+    function digitsOnly(value, maxLength) {
+      return value.replace(/\D/g, "").slice(0, maxLength);
+    }
+
+    function formatCardNumber(value) {
+      return digitsOnly(value, 16).replace(/(.{4})/g, "$1 ").trim();
+    }
+
+    function formatExpiry(value) {
+      const digits = digitsOnly(value, 4);
+      if (digits.length <= 2) return digits;
+      return `${digits.slice(0, 2)} / ${digits.slice(2)}`;
+    }
 
     function knownRows() {
       return window.AtelierCart.read()
@@ -288,6 +326,18 @@ const cartProducts = products.map(productForJson);
     form.addEventListener("submit", (event) => {
       event.preventDefault();
       alert("Checkout is a design preview — payment is not connected.");
+    });
+
+    cardNumber.addEventListener("input", () => {
+      cardNumber.value = formatCardNumber(cardNumber.value);
+    });
+
+    cardExpiry.addEventListener("input", () => {
+      cardExpiry.value = formatExpiry(cardExpiry.value);
+    });
+
+    cardCvc.addEventListener("input", () => {
+      cardCvc.value = digitsOnly(cardCvc.value, 4);
     });
 
     document.addEventListener("atelier-cart-change", render);
